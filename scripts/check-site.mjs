@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { readFile, access } from 'node:fs/promises';
 
-const demos = ['bounce', 'sprites'];
+const demos = ['bounce', 'sprites', 'text'];
 for (const file of [
   'index.html', 'site.css', 'site.js', 'wasm_exec.js', 'booba/booba.js',
   'ghostty-web/ghostty-web.js', 'ghostty-web/ghostty-vt.wasm',
@@ -18,4 +18,4 @@ for (const [, path] of html.matchAll(/(?:src|href)="([^"?#]+)"/g)) {
   await access(`web/${path}`);
 }
 for (const demo of demos) assert.ok(html.includes(`data-demo="${demo}"`), `${demo}: navigation`);
-console.log('Site links, runtime assets, and both WASM binaries checked.');
+console.log('Site links, runtime assets, and all WASM binaries checked.');

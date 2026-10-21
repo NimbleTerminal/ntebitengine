@@ -1,0 +1,147 @@
+// Font layout and animated text presented in a terminal through ntpicture.
+package main
+
+import (
+	"errors"
+	"fmt"
+	"os"
+	"time"
+
+	tea "charm.land/bubbletea/v2"
+	"github.com/charmbracelet/x/ansi"
+	"nimbleterminal.dev/ntebitengine"
+	"nimbleterminal.dev/ntebitengine/examples/internal/demorun"
+	"nimbleterminal.dev/ntpicture"
+)
+
+type model struct {
+	pic      *ntpicture.Picture
+	producer *ntebitengine.Producer
+	scene    *scene
+	controls controls
+	err      error
+
+	fps           float64
+	fpsSince      time.Time
+	fpsFrames     int
+	lastPresented uint64
+}
+
+type fpsTickMsg struct{}
+
+func fpsTick() tea.Cmd {
+	return tea.Tick(500*time.Millisecond, func(time.Time) tea.Msg { return fpsTickMsg{} })
+}
+
+func newModel() *model {
+	pic := ntpicture.New(ntpicture.Options{
+		AutoMode: true,
+		StableID: true,
+		Render:   ntpicture.Config{Fit: ntpicture.FitFill, KittyResolutionFactor: 0.5},
+	})
+	c := controls{scale: 1}
+	s := newScene(c)
+	return &model{pic: pic, scene: s, controls: c,
+		producer: ntebitengine.New(pic, s.draw, ntebitengine.Options{ManualRun: true})}
+}
+
+func (m *model) Init() tea.Cmd {
+	m.fpsSince = time.Now()
+	return tea.Batch(m.pic.Init(), m.producer.Init(), fpsTick())
+}
+
+func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmds []tea.Cmd
+	switch msg := msg.(type) {
+	case ntpicture.PresentedMsg:
+		if msg.Owner == m.pic && msg.Generation > m.lastPresented {
+			m.lastPresented = msg.Generation
+			m.fpsFrames++
+		}
+	case fpsTickMsg:
+		now := time.Now()
+		if elapsed := now.Sub(m.fpsSince).Seconds(); elapsed > 0 {
+			m.fps = float64(m.fpsFrames) / elapsed
+		}
+		m.fpsFrames, m.fpsSince = 0, now
+		if !m.producer.Status().Closed {
+			cmds = append(cmds, fpsTick())
+		}
+	case tea.WindowSizeMsg:
+		cmds = append(cmds, m.pic.SetSize(max(0, msg.Width), max(0, msg.Height-2)))
+	case tea.KeyPressMsg:
+		switch msg.String() {
+		case "q", "ctrl+c", "esc":
+			return m, tea.Sequence(m.producer.Close(), m.pic.Close(), tea.Quit)
+		case "m":
+			cmds = append(cmds, m.pic.ToggleMode())
+		case "+", "=":
+			cmds = append(cmds, m.pic.SetResolution(min(1, m.pic.Resolution()+0.25)))
+		case "-":
+			cmds = append(cmds, m.pic.SetResolution(max(0.25, m.pic.Resolution()-0.25)))
+		case "space":
+			m.controls.paused = !m.controls.paused
+		case "]":
+			m.controls.scale = min(1.6, m.controls.scale+0.1)
+		case "[":
+			m.controls.scale = max(0.6, m.controls.scale-0.1)
+		case "f":
+			m.controls.font = (m.controls.font + 1) % len(fontNames)
+		case "t":
+			m.controls.layout = (m.controls.layout + 1) % len(layoutNames)
+		case "a":
+			m.controls.align = (m.controls.align + 1) % 3
+		case "n":
+			m.controls.sample = (m.controls.sample + 1) % len(samples)
+		}
+		// Publish a value snapshot; the draw callback owns all animation/GPU state.
+		m.scene.controls.Store(m.controls)
+	case ntebitengine.ErrorMsg:
+		if msg.Owner == m.producer {
+			m.err = msg.Err
+			return m, tea.Sequence(m.producer.Close(), m.pic.Close(), tea.Quit)
+		}
+	}
+	// Picture first: terminal discovery can change the raster geometry.
+	cmds = append(cmds, m.pic.Update(msg))
+	cmds = append(cmds, m.producer.Update(msg))
+	return m, tea.Batch(cmds...)
+}
+
+func (m *model) View() tea.View {
+	g := m.pic.RasterGeometry()
+	state := layoutNames[m.controls.layout]
+	if m.controls.paused {
+		state = "paused"
+	}
+	header := fmt.Sprintf("TEXT LAB | %s | %s | %.0f%% | %dx%d px | %.1f FPS",
+		fontNames[m.controls.font], state, m.controls.scale*100, g.Pixels.X, g.Pixels.Y, m.fps)
+	const help = "t: scene | f: font | a: align | n: text | [/]: size | space: pause | m: mode | +/-: resolution | q: quit"
+	// Keep the two reserved UI rows from wrapping over the framebuffer.
+	v := tea.NewView(ansi.Truncate(header, g.Cells.X, "…") + "\n" +
+		ansi.Truncate(help, g.Cells.X, "…") + "\n" + m.pic.View())
+	v.AltScreen = true
+	return v
+}
+
+func run() error {
+	m := newModel()
+	done := make(chan error, 1)
+	go func() {
+		err := demorun.Run(m)
+		// Also stop the GPU if Tea fails before Init or exits via a signal.
+		m.producer.Close()()
+		_ = m.pic.Close()
+		done <- errors.Join(err, m.err)
+	}()
+	// Ebitengine binds the main goroutine to the main OS thread.
+	loopErr := m.producer.Run()
+	return errors.Join(loopErr, <-done)
+}
+
+func main() {
+	if err := run(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}

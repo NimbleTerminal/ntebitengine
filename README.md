@@ -36,9 +36,20 @@ scaling, horizontal flips, and independent animation phases. Press `space` to
 pause, `[`/`]` to remove/add robots, `m` to switch modes, `+`/`-` for resolution,
 and `q` to quit. The sheet is generated in Go; no assets or downloads are needed.
 
+```sh
+go run ./examples/text
+```
+
+The [text lab](examples/text) uses Ebitengine's `text/v2` API with bundled Go
+Sans, Bold, and Mono fonts. Press `t` to cycle specimen, wrapped paragraph, and
+animated text scenes; `f` for fonts, `a` for alignment, `n` for sample text, and
+`[`/`]` for type size. It includes the presented-FPS meter and the same pause,
+mode, and resolution controls as the sprite demo. Kitty mode at higher resolution
+makes small type clearer; half-block mode shows the limits of a coarse raster.
+
 ## Browser demo page
 
-The `web/` page follows the ntsvg/ntpdf demo layout and runs both examples locally
+The `web/` page follows the ntsvg/ntpdf demo layout and runs all three examples locally
 in the browser through booba. It includes demo navigation, clickable controls,
 Kitty/glyph switching, a renderer HUD, and restart links. Ebitengine uses WebGL
 on an offscreen canvas; the visible canvas is booba's terminal.

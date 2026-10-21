@@ -16,6 +16,9 @@ tasks:
   run-sprites:
     desc: Run the native sprite demo
     cmds: [go run ./examples/sprites]
+  run-text:
+    desc: Run the native text lab
+    cmds: [go run ./examples/text]
   build-wasm-site:
     desc: Build browser demos and export the pinned booba runtime
     cmds: [sh scripts/build-site.sh]

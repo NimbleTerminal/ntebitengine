@@ -11,6 +11,11 @@ const demos = {
     help: 'm: glyph/Kitty · +/-: resolution · q: quit. Resize the browser to change the framebuffer.',
     controls: [],
   },
+  text: {
+    title: 'Text lab',
+    help: 't: scene · f: font · a: alignment · n: sample · [/]: size · Space: pause · m: glyph/Kitty · +/-: resolution · q: quit. Kitty mode makes small text clearer.',
+    controls: [['Next scene', 't'], ['Next font', 'f'], ['Alignment', 'a'], ['Next sample', 'n'], ['Smaller type', '['], ['Larger type', ']'], ['Pause / resume', ' ']],
+  },
 };
 const requested = new URLSearchParams(location.search).get('demo');
 const demo = Object.hasOwn(demos, requested) ? requested : 'sprites';
