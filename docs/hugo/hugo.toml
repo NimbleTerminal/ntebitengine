@@ -15,7 +15,7 @@ relativeURLs = true
   BookSection = "guide"
   BookRepo = "https://github.com/NimbleTerminal/ntebitengine"
   BookEditPath = "edit/main/docs/hugo"
-  # Two chapters are directly reachable in the sidebar. Avoid the theme's
+  # Guide chapters are directly reachable in the sidebar. Avoid the theme's
   # root-relative search index so the guide can be served under any prefix.
   BookSearch = false
   BookComments = false

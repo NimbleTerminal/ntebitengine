@@ -10,6 +10,7 @@ import (
 	"image/color"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"nimbleterminal.dev/ntpicture"
@@ -33,6 +34,9 @@ func TestMain(m *testing.M) {
 			dst.Fill(color.RGBA{R: 255, A: 255})
 		case 4:
 			return gpuDrawError
+		case 5:
+			time.Sleep(10 * time.Millisecond) // a known callback cost, separate from readback
+			dst.Fill(color.White)
 		}
 		return nil
 	}, Options{})
@@ -71,6 +75,9 @@ func TestGPUReadback(t *testing.T) {
 		if got.img.Bounds().Size() != frame.size {
 			t.Fatal("wrong CPU dimensions")
 		}
+		if got.drawTime < 0 || got.readbackTime <= 0 {
+			t.Fatalf("missing or invalid GPU timings: draw=%v readback=%v", got.drawTime, got.readbackTime)
+		}
 		for y := 0; y < frame.size.Y; y++ {
 			for x := 0; x < frame.size.X; x++ {
 				if pixel := got.img.RGBAAt(x, y); pixel != frame.want {
@@ -87,7 +94,19 @@ func TestGPUReadback(t *testing.T) {
 	}
 	r := &request{ctx: context.Background(), geometry: ntpicture.RasterGeometry{Cells: image.Pt(4, 1), Pixels: image.Pt(2, 2)}, reply: make(chan renderResult, 1)}
 	gpuLoop.requests <- r
-	if got := receive(t, r.reply); got.err != gpuDrawError || got.img != nil {
+	if got := receive(t, r.reply); got.err != gpuDrawError || got.img != nil || got.readbackTime != 0 {
 		t.Fatal("draw error did not suppress readback")
+	}
+}
+
+func TestGPUCallbackTiming(t *testing.T) {
+	r := &request{ctx: context.Background(), geometry: ntpicture.RasterGeometry{Cells: image.Pt(5, 1), Pixels: image.Pt(4, 4)}, reply: make(chan renderResult, 1)}
+	gpuLoop.requests <- r
+	got := receive(t, r.reply)
+	if got.err != nil || got.img == nil {
+		t.Fatalf("render failed: %v", got.err)
+	}
+	if got.drawTime < 10*time.Millisecond || got.readbackTime <= 0 {
+		t.Fatalf("timings did not capture the callback: draw=%v readback=%v", got.drawTime, got.readbackTime)
 	}
 }

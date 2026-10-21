@@ -8,6 +8,7 @@ import (
 	"context"
 	"errors"
 	"image"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -31,11 +32,28 @@ type Options struct {
 	ManualRun bool
 }
 
-// Status is a snapshot owned by the Bubble Tea event loop.
+// FrameStats describes one producer frame confirmed by an exact matching
+// PresentedMsg. Durations are wall-clock measurements, not GPU execution time.
+// The stages omit request pickup, surface/image allocation, clearing, and result
+// delivery; their sum is not end-to-end frame latency.
+type FrameStats struct {
+	Generation   uint64 // producer generation, not Picture generation; zero means no sample
+	Geometry     ntpicture.RasterGeometry
+	DrawTime     time.Duration // time inside DrawFunc, including any blocking work
+	ReadbackTime time.Duration // time inside ReadPixels, including GPU synchronization
+	PresentTime  time.Duration // submission call through delivery of PresentedMsg to Update
+	Bytes        int64         // raw immutable RGBA buffer bytes, not encoded/transport bytes
+}
+
+// Status is a snapshot owned by the Bubble Tea event loop. Diagnostics are
+// cumulative since New; LastFrame remains available across resize/error/Close.
 type Status struct {
 	Geometry             ntpicture.RasterGeometry
-	Generation           uint64 // producer request generation, not a Picture generation
-	Frames               uint64 // frames submitted to Picture
+	Generation           uint64     // producer request generation, not a Picture generation
+	Frames               uint64     // frames submitted to Picture
+	PresentedFrames      uint64     // exact matching confirmations of producer submissions
+	DiscardedRenders     uint64     // obsolete results drained after geometry changes (even if canceled before drawing)
+	LastFrame            FrameStats // most recently confirmed producer frame; zero until one is confirmed
 	InFlight             bool
 	AwaitingPresentation bool
 	Closed               bool
@@ -55,15 +73,18 @@ type ErrorMsg struct {
 // returns, the same owner may call Close for cleanup. Only one Producer may run
 // per process, and it cannot restart after Close (an Ebitengine limitation).
 type Producer struct {
-	pic         *ntpicture.Picture
-	loop        *gameLoop
-	manual      bool
-	initialized bool
-	stopped     bool
-	status      Status
-	active      *request
-	cancel      context.CancelFunc
-	submitted   uint64
+	pic          *ntpicture.Picture
+	loop         *gameLoop
+	manual       bool
+	initialized  bool
+	stopped      bool
+	status       Status
+	active       *request
+	cancel       context.CancelFunc
+	submitted    uint64
+	submittedAt  time.Time
+	pendingFrame FrameStats
+	now          func() time.Time // event-loop clock; replaceable in deterministic tests
 }
 
 // New binds draw to pic. Construct pic with StableID: true and without
@@ -71,7 +92,7 @@ type Producer struct {
 // source. The host still owns Picture.Init, Update, layout, View, and Close.
 // Nil pic or draw is reported as ErrorMsg by Init.
 func New(pic *ntpicture.Picture, draw DrawFunc, opts Options) *Producer {
-	return &Producer{pic: pic, loop: newGameLoop(draw, opts), manual: opts.ManualRun}
+	return &Producer{pic: pic, loop: newGameLoop(draw, opts), manual: opts.ManualRun, now: time.Now}
 }
 
 // Init starts the background loop unless ManualRun is set, and requests the
@@ -131,6 +152,7 @@ func (p *Producer) Update(msg tea.Msg) tea.Cmd {
 			p.cancel()
 		}
 		p.status.AwaitingPresentation = false
+		p.forgetPresentation()
 		p.status.Err = nil
 	}
 	var cmd tea.Cmd
@@ -143,6 +165,7 @@ func (p *Producer) Update(msg tea.Msg) tea.Cmd {
 		p.cancel, p.active = nil, nil
 		p.status.InFlight = false
 		if msg.request.generation != p.status.Generation {
+			p.status.DiscardedRenders++
 			break // Drain obsolete work before opening the render slot again.
 		}
 		if p.status.Err != nil {
@@ -153,19 +176,37 @@ func (p *Producer) Update(msg tea.Msg) tea.Cmd {
 			break
 		}
 		before := p.pic.Status().Generation
+		submittedAt := p.now()
 		cmd = p.pic.SetImageImmutableFor(msg.img, msg.request.geometry)
 		if generation := p.pic.Status().Generation; generation != before {
 			p.submitted = generation
 			p.status.Frames++
+			if msg.img != nil {
+				p.submittedAt = submittedAt
+				p.pendingFrame = FrameStats{
+					Generation: msg.request.generation, Geometry: msg.request.geometry,
+					DrawTime: msg.drawTime, ReadbackTime: msg.readbackTime,
+					Bytes: int64(len(msg.img.Pix)),
+				}
+			}
 		}
 		// Even a rejected submission waits for its StaleFrameMsg.
 		p.status.AwaitingPresentation = true
 	case ntpicture.PresentedMsg:
 		if msg.Owner == p.pic && p.status.AwaitingPresentation && msg.Generation >= p.submitted {
+			// Newer Picture commits can release pacing, but cannot be timed as
+			// this submission. Ignore duplicate, superseded, and foreign samples.
+			if msg.Generation == p.submitted && p.pendingFrame.Generation != 0 {
+				p.pendingFrame.PresentTime = p.now().Sub(p.submittedAt)
+				p.status.LastFrame = p.pendingFrame
+				p.status.PresentedFrames++
+			}
+			p.forgetPresentation()
 			p.status.AwaitingPresentation = false
 		}
 	case ntpicture.StaleFrameMsg:
 		if msg.Owner == p.pic {
+			p.forgetPresentation()
 			p.status.AwaitingPresentation = false
 		}
 	case ntpicture.ErrorMsg:
@@ -198,6 +239,7 @@ func (p *Producer) Close() tea.Cmd {
 		p.status.Closed = true
 		p.status.Generation++
 		p.status.AwaitingPresentation = false
+		p.forgetPresentation()
 		p.status.InFlight = false
 		if p.cancel != nil {
 			p.cancel()
@@ -213,7 +255,13 @@ func (p *Producer) Status() Status { return p.status }
 func (p *Producer) fail(err error) tea.Cmd {
 	p.status.Err = err
 	p.status.AwaitingPresentation = false
+	p.forgetPresentation()
 	return func() tea.Msg { return ErrorMsg{Owner: p, Err: err} }
+}
+
+func (p *Producer) forgetPresentation() {
+	p.submittedAt = time.Time{}
+	p.pendingFrame = FrameStats{}
 }
 
 func (p *Producer) start() tea.Cmd {
@@ -246,15 +294,17 @@ func (p *Producer) start() tea.Cmd {
 		case <-loop.done:
 			return loopStoppedMsg{owner: p, err: loop.err}
 		}
-		return frameMsg{owner: p, request: r, img: result.img, err: result.err}
+		return frameMsg{owner: p, request: r, img: result.img, err: result.err,
+			drawTime: result.drawTime, readbackTime: result.readbackTime}
 	}
 }
 
 type frameMsg struct {
-	owner   *Producer
-	request *request
-	img     *image.RGBA
-	err     error
+	owner                  *Producer
+	request                *request
+	img                    *image.RGBA
+	err                    error
+	drawTime, readbackTime time.Duration
 }
 
 type loopStoppedMsg struct {

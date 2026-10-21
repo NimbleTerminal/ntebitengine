@@ -36,7 +36,9 @@ Read [Managing the event loops](../event-loops/) alongside the
 | --- | --- |
 | TEA | Handled simulation ticks, latest published revision, simulation phase |
 | DRAW | Completed callbacks, revision sampled by the most recent callback, callback duration |
-| PIPE | Producer state, request generation, submitted frames, committed presentation messages |
+| PIPE | Producer state, request generation, submitted frames, all owned picture commits |
+| TIME | Draw callback, readback, and presentation duration for one confirmed producer frame |
+| FRAME | That frame's raster size, raw RGBA bytes, producer generation, confirmed count, obsolete-render count |
 
 The callback duration includes the artificial sleep and CPU draw calls. It
 excludes the adapter's subsequent readback and ntpicture's preparation/output;
@@ -46,6 +48,11 @@ counters and should not be compared for equality.
 
 The presented count includes owned Picture commits caused by geometry changes
 as well as newly submitted frames. It need not equal the submitted count.
+
+The TIME and FRAME rows update together only after an exact matching producer
+submission is confirmed. They can lag behind the DRAW row and the current
+geometry, especially with slow rendering or during a resize. Read
+[Measuring frame costs](../diagnostics/) for the precise measurement boundaries.
 
 ## Controls
 

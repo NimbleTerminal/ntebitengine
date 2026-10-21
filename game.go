@@ -7,6 +7,7 @@ import (
 	"image"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"nimbleterminal.dev/ntpicture"
@@ -23,8 +24,9 @@ type request struct {
 }
 
 type renderResult struct {
-	img *image.RGBA
-	err error
+	img                    *image.RGBA
+	err                    error
+	drawTime, readbackTime time.Duration
 }
 
 // gameLoop contains only immutable configuration, channels, and synchronized
@@ -145,20 +147,28 @@ func (g *frameGame) render(r *request) renderResult {
 		g.dst = ebiten.NewImage(size.X, size.Y)
 	}
 	g.dst.Clear()
-	if err := g.loop.draw(g.dst, r.geometry); err != nil {
-		return renderResult{err: err}
+	started := time.Now()
+	result := renderResult{err: g.loop.draw(g.dst, r.geometry)}
+	result.drawTime = time.Since(started)
+	if result.err != nil {
+		return result
 	}
 	if err := r.ctx.Err(); err != nil {
-		return renderResult{err: err}
+		result.err = err
+		return result
 	}
 	select {
 	case <-g.loop.stop:
-		return renderResult{err: context.Canceled}
+		result.err = context.Canceled
+		return result
 	default:
 	}
 	// ReadPixels returns premultiplied RGBA, matching image.RGBA. Each frame
 	// owns fresh CPU pixels that are never reused after the immutable handoff.
 	img := image.NewRGBA(image.Rectangle{Max: size})
+	started = time.Now()
 	g.dst.ReadPixels(img.Pix)
-	return renderResult{img: img}
+	result.readbackTime = time.Since(started)
+	result.img = img
+	return result
 }

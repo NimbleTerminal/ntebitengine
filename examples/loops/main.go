@@ -35,6 +35,8 @@ type model struct {
 // This tick advances application state. It never requests a render directly.
 type tickMsg struct{}
 
+const headerRows = 7
+
 func tick() tea.Cmd {
 	return tea.Tick(time.Second/30, func(time.Time) tea.Msg { return tickMsg{} })
 }
@@ -75,7 +77,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			cmds = append(cmds, tick())
 		}
 	case tea.WindowSizeMsg:
-		cmds = append(cmds, m.pic.SetSize(max(0, msg.Width), max(0, msg.Height-5)))
+		cmds = append(cmds, m.pic.SetSize(max(0, msg.Width), max(0, msg.Height-headerRows)))
 	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "q", "ctrl+c", "esc":
@@ -149,11 +151,23 @@ func (m *model) View() tea.View {
 	if m.state.slow {
 		slow = "80ms"
 	}
+	frame := status.LastFrame
+	timing := "TIME waiting for a confirmed producer frame"
+	buffer := fmt.Sprintf("FRAME confirmed: %d | obsolete renders: %d", status.PresentedFrames, status.DiscardedRenders)
+	if frame.Generation != 0 {
+		ms := func(d time.Duration) float64 { return float64(d) / float64(time.Millisecond) }
+		timing = fmt.Sprintf("TIME draw: %.2fms | readback: %.2fms | present: %.2fms", ms(frame.DrawTime), ms(frame.ReadbackTime), ms(frame.PresentTime))
+		buffer = fmt.Sprintf("FRAME %dx%d | %.1f KiB RGBA | gen: %d | confirmed: %d | obsolete: %d",
+			frame.Geometry.Pixels.X, frame.Geometry.Pixels.Y, float64(frame.Bytes)/1024,
+			frame.Generation, status.PresentedFrames, status.DiscardedRenders)
+	}
 	rows := []string{
 		fmt.Sprintf("LOOP LAB | %s | %.2fx | slow draw: %s | %.1f presented FPS", motion, m.speed, slow, m.fps),
 		fmt.Sprintf("TEA  ticks: %d | latest snapshot: %d | phase: %.2f", m.ticks, m.state.revision, m.state.phase),
 		fmt.Sprintf("DRAW calls: %d | sampled snapshot: %d | callback: %.1fms", report.calls, report.revision, float64(report.duration)/float64(time.Millisecond)),
-		fmt.Sprintf("PIPE %s | generation: %d | submitted: %d | presented: %d", phase, status.Generation, status.Frames, m.presented),
+		fmt.Sprintf("PIPE %s | generation: %d | submitted: %d | picture commits: %d", phase, status.Generation, status.Frames, m.presented),
+		timing,
+		buffer,
 		"space: pause | l: slow draw | [/]: speed | r: reset | m: mode | +/-: resolution | q: quit",
 	}
 	content := ""

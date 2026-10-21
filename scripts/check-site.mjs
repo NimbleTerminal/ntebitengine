@@ -7,6 +7,7 @@ for (const file of [
   'index.html', 'site.css', 'site.js', 'wasm_exec.js', 'booba/booba.js',
   'ghostty-web/ghostty-web.js', 'ghostty-web/ghostty-vt.wasm',
   'docs/index.html', 'docs/guide/event-loops/index.html', 'docs/guide/loop-lab/index.html',
+  'docs/guide/diagnostics/index.html',
 ]) await access(`web/${file}`);
 
 for (const demo of demos) {

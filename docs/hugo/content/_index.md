@@ -16,6 +16,9 @@ The [Loop lab](guide/loop-lab/) makes that boundary visible with independent
 simulation and drawing counters. Slow down the drawing callback and keep
 interacting with the terminal to see the handoff in action.
 
+[Measuring frame costs](guide/diagnostics/) explains the producer's timing and
+frame diagnostics, also displayed in the Loop lab.
+
 - [Try all demos](../)
 - [Source and package README](https://github.com/NimbleTerminal/ntebitengine)
 - [API reference](https://pkg.go.dev/nimbleterminal.dev/ntebitengine)

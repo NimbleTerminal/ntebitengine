@@ -241,6 +241,32 @@ See ntpicture's [live-framebuffer documentation](https://github.com/NimbleTermin
 and [framebuffer producer example](https://github.com/NimbleTerminal/ntpicture/tree/main/examples/framebuffer)
 for the presentation contract this adapter follows.
 
+## Diagnostics
+
+Read `producer.Status()` on the Bubble Tea event loop. `LastFrame` describes
+the most recent producer submission confirmed by an exact matching
+`PresentedMsg`; `LastFrame.Generation == 0` means no sample yet.
+
+```go
+status := producer.Status()
+frame := status.LastFrame
+// frame.DrawTime: inside DrawFunc (CPU calls and any blocking work)
+// frame.ReadbackTime: inside ReadPixels (GPU synchronization and copying)
+// frame.PresentTime: submission through PresentedMsg delivery to Update
+// frame.Geometry, frame.Bytes: that frame's raster and raw RGBA buffer size
+// status.PresentedFrames: exact confirmations of producer submissions
+// status.DiscardedRenders: obsolete results drained after geometry changes
+```
+
+These are wall-clock stages, not GPU execution timings or terminal display
+acknowledgements. The byte count is not compressed transport traffic. The last
+sample remains available across resize, errors, and closure; its geometry may
+differ from the current `Status().Geometry`. Diagnostics do not change pacing.
+
+Run `go run ./examples/loops` for live measurements. See the
+[diagnostics guide](docs/hugo/content/guide/diagnostics.md) for counter semantics,
+measurement boundaries, and experiments to identify expensive stages.
+
 ## Constraints
 
 - One producer / Ebitengine loop per process, with no restart after closure.
