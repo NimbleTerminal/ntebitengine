@@ -42,7 +42,26 @@ func TestMain(m *testing.M) {
 	}, Options{})
 	result := make(chan int, 1)
 	go func() {
-		code := m.Run()
+		// Establish the graphics context and complete one readback before the
+		// tests apply their shorter per-frame deadlines. Software drivers on CI
+		// can take longer to initialize than an already-running renderer.
+		started := time.Now()
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		warmup := &request{ctx: ctx, geometry: ntpicture.RasterGeometry{Pixels: image.Pt(1, 1)}, reply: make(chan renderResult, 1)}
+		gpuLoop.requests <- warmup
+		code := 1
+		select {
+		case frame := <-warmup.reply:
+			if frame.err != nil {
+				fmt.Fprintln(os.Stderr, "graphics startup:", frame.err)
+			} else {
+				fmt.Fprintln(os.Stderr, "graphics startup completed in", time.Since(started))
+				code = m.Run()
+			}
+		case <-ctx.Done():
+			fmt.Fprintln(os.Stderr, "graphics startup:", ctx.Err())
+		}
 		gpuLoop.close()
 		result <- code
 	}()
