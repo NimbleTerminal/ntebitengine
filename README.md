@@ -309,6 +309,6 @@ premultiplied pixels, immutable frame ownership, and callback errors.
 shader lab: effect, palette, strength, pause, editable text, light/dark panels,
 gauges, and presented-FPS plots. Drag either title bar and scroll inside panels.
 The [browser gallery](https://nimbleterminal.dev/ntebitengine/?demo=ntui) includes
-the same demo. See [its README](examples/ntui/README.md) for the temporary
-workspace required while the ntui backend is unpublished, and the
+the same demo. The backend is included in the required ntui v0.2.0 release.
+See [its README](examples/ntui/README.md) for controls and the
 [event-loop guide](docs/hugo/content/guide/event-loops.md#ntui-overlays).

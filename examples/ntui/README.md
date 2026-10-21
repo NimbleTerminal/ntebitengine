@@ -29,32 +29,19 @@ GPU resources are callback-owned and reused for the process lifetime. The ntui
 backend owns no GPU images; its font cache is managed by text/v2. Ebitengine
 teardown handles engine caches and the scene resources at process exit.
 
-## Developing before the ntui backend is published
+## Running
 
-The checked-in minimum ntui version predates the backend. Until a version with
-`ntui/ebiten` is available, use checkouts of these two changes in a **temporary**
-Go workspace. Do not add local replacements to go.mod or commit a workspace:
-
-Run from ntebitengine with the updated ntui checkout next to it:
+The `ntui/ebiten` backend is included in ntui v0.2.0, required by this module.
+Run from the repository root; no sibling checkout or temporary workspace is needed:
 
 ```sh
-nte_dir="$PWD"
-ntui_dir="$(cd ../ntui && pwd)"
-workspace_dir=$(mktemp -d)
-(cd "$workspace_dir" && go work init "$nte_dir" "$ntui_dir")
-GOWORK="$workspace_dir/go.work" go run ./examples/ntui
-GOWORK="$workspace_dir/go.work" go test -race ./...
-GOWORK="$workspace_dir/go.work" go vet ./...
-
-# Add the same browser-only Bubble Tea replacement as wasm.work:
-cp "$workspace_dir/go.work" "$workspace_dir/wasm.work"
-GOWORK="$workspace_dir/wasm.work" go work edit \
-  -replace=charm.land/bubbletea/v2=github.com/neomantra/bubbletea/v2@v2.0.0-20261009201241-c397c32a5074
-NTEBITENGINE_WASM_WORK="$workspace_dir/wasm.work" sh scripts/build-site.sh
+go run ./examples/ntui
+go test -race ./...
+go vet ./...
+sh scripts/build-site.sh
 ```
 
-After publication, update the ntui requirement to that real version; then normal
-`task run-ntui` and `task build-wasm-site` need no temporary workspace.
-No release or invented future version is required to review these changes.
+The browser build uses the checked-in `wasm.work` for the Bubble Tea browser fork.
+The equivalent task commands are `task run-ntui` and `task build-wasm-site`.
 
 Bundled Go Mono fonts use the [Go font license](../../web/licenses/go-fonts.txt).

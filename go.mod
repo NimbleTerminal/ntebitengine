@@ -4,12 +4,12 @@ go 1.26.8
 
 require (
 	charm.land/bubbletea/v2 v2.1.0
-	github.com/NimbleMarkets/go-booba v0.10.3
+	github.com/NimbleMarkets/go-booba v0.10.4
 	github.com/charmbracelet/x/ansi v0.11.9
 	github.com/hajimehoshi/ebiten/v2 v2.10.5
 	golang.org/x/image v0.47.0
 	nimbleterminal.dev/ntpicture v0.1.1
-	nimbleterminal.dev/ntui v0.1.0
+	nimbleterminal.dev/ntui v0.2.0
 )
 
 require (
@@ -24,7 +24,7 @@ require (
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/ebitengine/gomobile v0.0.0-20260820040257-d11f821a26a6 // indirect
 	github.com/ebitengine/hideconsole v1.0.0 // indirect
-	github.com/ebitengine/purego v0.11.0 // indirect
+	github.com/ebitengine/purego v0.11.2 // indirect
 	github.com/go-text/typesetting v0.3.5 // indirect
 	github.com/lrstanley/bubblezone/v2 v2.0.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.4.1 // indirect
