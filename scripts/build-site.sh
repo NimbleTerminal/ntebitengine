@@ -4,7 +4,7 @@ set -eu
 cd "$(dirname "$0")/.."
 site_root=$(pwd)
 mkdir -p web/demos
-for demo in bounce sprites text; do
+for demo in bounce sprites text shaders; do
   GOWORK="$site_root/wasm.work" GOOS=js GOARCH=wasm CGO_ENABLED=0 \
     go build -trimpath -o "web/demos/$demo.wasm" "./examples/$demo"
 done

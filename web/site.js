@@ -16,6 +16,11 @@ const demos = {
     help: 't: scene · f: font · a: alignment · n: sample · [/]: size · Space: pause · m: glyph/Kitty · +/-: resolution · q: quit. Kitty mode makes small text clearer.',
     controls: [['Next scene', 't'], ['Next font', 'f'], ['Alignment', 'a'], ['Next sample', 'n'], ['Smaller type', '['], ['Larger type', ']'], ['Pause / resume', ' ']],
   },
+  shaders: {
+    title: 'Kage lab',
+    help: 't: effect · p: palette · [/]: strength · Space: pause · m: glyph/Kitty · +/-: resolution · q: quit. CRT applies a second shader pass to the plasma image.',
+    controls: [['Next effect', 't'], ['Next palette', 'p'], ['Less effect', '['], ['More effect', ']'], ['Pause / resume', ' ']],
+  },
 };
 const requested = new URLSearchParams(location.search).get('demo');
 const demo = Object.hasOwn(demos, requested) ? requested : 'sprites';

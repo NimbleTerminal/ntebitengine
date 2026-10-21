@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { readFile, access } from 'node:fs/promises';
 
-const demos = ['bounce', 'sprites', 'text'];
+const demos = ['bounce', 'sprites', 'text', 'shaders'];
 for (const file of [
   'index.html', 'site.css', 'site.js', 'wasm_exec.js', 'booba/booba.js',
   'ghostty-web/ghostty-web.js', 'ghostty-web/ghostty-vt.wasm',

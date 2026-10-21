@@ -19,6 +19,9 @@ tasks:
   run-text:
     desc: Run the native text lab
     cmds: [go run ./examples/text]
+  run-shaders:
+    desc: Run the native Kage shader lab
+    cmds: [go run ./examples/shaders]
   build-wasm-site:
     desc: Build browser demos and export the pinned booba runtime
     cmds: [sh scripts/build-site.sh]

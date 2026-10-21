@@ -1,0 +1,44 @@
+//kage:unit pixels
+
+package main
+
+var Time float
+var Aspect float
+var Strength float
+var Mode float
+var Palette vec3
+
+func colorAt(t float) vec3 {
+	return 0.5 + 0.5*cos(6.283185*(vec3(t)+Palette))
+}
+
+func Fragment(dstPos vec4, srcPos vec2, color vec4) vec4 {
+	// Destination positions include atlas offsets. Normalize against the image
+	// region, then use physical aspect rather than assuming square raster pixels.
+	uv := (dstPos.xy - imageDstOrigin()) / imageDstSize()
+	p := (uv - 0.5) * vec2(Aspect, 1)
+	t := Time * 0.4
+	if Mode < 0.5 {
+		q := p * 5
+		q += Strength * 0.55 * vec2(sin(q.y*1.4+t), cos(q.x*1.2-t))
+		v := sin(q.x+t) + sin(q.y-t*1.3) + sin(length(q)*2-t*2)
+		rgb := colorAt(v*0.16 + t*0.12)
+		// A gentle vignette keeps the broad flowing color field readable.
+		rgb *= 0.65 + 0.35*(1-smoothstep(0.15, 0.75, length(uv-0.5)))
+		return vec4(rgb, 1)
+	}
+
+	// Three moving ring sources, with a width floor for coarse glyph rasters.
+	rgb := vec3(0.025, 0.035, 0.065)
+	for i := 0; i < 3; i++ {
+		phase := float(i)*2.094395 + t
+		center := vec2(cos(phase)*Aspect*0.22, sin(phase*1.3)*0.22)
+		d := length(p - center)
+		wave := abs(sin(d*24 - t*3 + float(i)))
+		width := max(0.035, 18/imageDstSize().y)
+		line := 1 - smoothstep(width, width+0.12, wave)
+		glow := 0.035 / (0.06 + wave)
+		rgb += colorAt(float(i)*0.23+t*0.06) * (line + glow) * Strength * 0.55
+	}
+	return vec4(clamp(rgb, 0, 1), 1)
+}

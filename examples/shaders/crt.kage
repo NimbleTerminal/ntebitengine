@@ -1,0 +1,28 @@
+//kage:unit pixels
+
+package main
+
+var Time float
+var Strength float
+
+func Fragment(dstPos vec4, srcPos vec2, color vec4) vec4 {
+	size := imageSrc0Size()
+	origin := imageSrc0Origin()
+	uv := (srcPos - origin) / size
+	p := uv*2 - 1
+	// Barrel distortion and an opaque dark border outside the curved screen.
+	warped := p * (1 + 0.075*Strength*dot(p, p))
+	uv = warped*0.5 + 0.5
+	if uv.x < 0 || uv.x > 1 || uv.y < 0 || uv.y > 1 {
+		return vec4(0.012, 0.018, 0.03, 1)
+	}
+	pos := origin + uv*size
+	shift := vec2(1.5*Strength, 0)
+	rgb := vec3(imageSrc0At(pos+shift).r, imageSrc0At(pos).g, imageSrc0At(pos-shift).b)
+	// Virtual scanlines stay visible at different framebuffer resolutions.
+	lines := 0.85 + 0.15*cos(uv.y*min(240, size.y)*3.141593)
+	roll := 1 - 0.12*Strength*exp(-80*pow(uv.y-fract(Time*0.12), 2))
+	vignette := 1 - 0.28*dot(p, p)
+	rgb *= mix(1, lines, min(Strength, 1)) * roll * vignette
+	return vec4(clamp(rgb, 0, 1), 1)
+}

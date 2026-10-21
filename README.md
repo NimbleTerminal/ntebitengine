@@ -47,9 +47,19 @@ animated text scenes; `f` for fonts, `a` for alignment, `n` for sample text, and
 mode, and resolution controls as the sprite demo. Kitty mode at higher resolution
 makes small type clearer; half-block mode shows the limits of a coarse raster.
 
+```sh
+go run ./examples/shaders
+```
+
+The [Kage lab](examples/shaders) renders plasma, neon ripple rings, and a CRT
+effect with embedded fragment shaders. Press `t` for effects, `p` for palettes,
+and `[`/`]` for effect strength. Space pauses animation; mode, resolution, quit,
+and presented-FPS behavior match the other labs. The CRT scene demonstrates a
+second shader pass sampling an intermediate GPU image, with one final readback.
+
 ## Browser demo page
 
-The `web/` page follows the ntsvg/ntpdf demo layout and runs all three examples locally
+The `web/` page follows the ntsvg/ntpdf demo layout and runs all four examples locally
 in the browser through booba. It includes demo navigation, clickable controls,
 Kitty/glyph switching, a renderer HUD, and restart links. Ebitengine uses WebGL
 on an offscreen canvas; the visible canvas is booba's terminal.
