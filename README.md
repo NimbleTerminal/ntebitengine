@@ -26,6 +26,16 @@ terminal resizing, and supports `m` to switch modes, `+`/`-` to change Kitty
 resolution, and `q` to quit. It uses physical display aspect to keep the ball
 round even when glyph raster pixels are not square.
 
+```sh
+go run ./examples/sprites
+```
+
+The [sprite parade](examples/sprites) animates tinted pixel robots from a shared
+four-frame sprite sheet. It demonstrates `SubImage`, `DrawImage`, nearest-neighbor
+scaling, horizontal flips, and independent animation phases. Press `space` to
+pause, `[`/`]` to remove/add robots, `m` to switch modes, `+`/`-` for resolution,
+and `q` to quit. The sheet is generated in Go; no assets or downloads are needed.
+
 ## Bubble Tea integration
 
 Create the picture with `StableID: true`, `FitFill`, and `AutoMode: true` for
