@@ -1,0 +1,7 @@
+// Browser-only Bubble Tea fork, matching the ntsvg/ntpdf demo bridge.
+// Native builds continue to use upstream Bubble Tea from go.mod.
+go 1.26.8
+
+use .
+
+replace charm.land/bubbletea/v2 => github.com/neomantra/bubbletea/v2 v2.0.0-20261009201241-c397c32a5074

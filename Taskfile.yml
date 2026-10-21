@@ -1,0 +1,31 @@
+version: '3'
+
+env:
+  GOWORK: 'off'
+
+tasks:
+  test:
+    desc: Test the adapter and native demos
+    cmds: [go test ./...]
+  vet:
+    desc: Vet the adapter and native demos
+    cmds: [go vet ./...]
+  run-bounce:
+    desc: Run the native vector demo
+    cmds: [go run ./examples/bounce]
+  run-sprites:
+    desc: Run the native sprite demo
+    cmds: [go run ./examples/sprites]
+  build-wasm-site:
+    desc: Build browser demos and export the pinned booba runtime
+    cmds: [sh scripts/build-site.sh]
+  check-site:
+    desc: Check the generated site and WASM binaries
+    cmds:
+      - node --check web/site.js
+      - node scripts/check-site.mjs
+  serve-wasm-site:
+    desc: Build and serve http://localhost:8000/web/
+    cmds:
+      - task: build-wasm-site
+      - python3 -m http.server 8000 --bind 127.0.0.1

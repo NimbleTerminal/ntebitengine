@@ -9,6 +9,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"nimbleterminal.dev/ntebitengine"
+	"nimbleterminal.dev/ntebitengine/examples/internal/demorun"
 	"nimbleterminal.dev/ntpicture"
 )
 
@@ -114,7 +115,7 @@ func run() error {
 	m := newModel()
 	done := make(chan error, 1)
 	go func() {
-		_, err := tea.NewProgram(m).Run()
+		err := demorun.Run(m)
 		// Also stop the GPU if Tea fails before Init or exits via a signal.
 		m.producer.Close()()
 		_ = m.pic.Close()

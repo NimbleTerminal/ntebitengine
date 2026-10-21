@@ -13,7 +13,7 @@ offscreen WebGPU renderer and `*image.NRGBA` output. Both can feed ntpicture;
 
 ## Install and run
 
-Requires Go 1.26 or later (including ntpicture's requirement) and desktop graphics
+Requires Go 1.26.8 or later and desktop graphics
 support. Ebitengine is pinned to v2.10.5 for hidden-window support.
 
 ```sh
@@ -35,6 +35,35 @@ four-frame sprite sheet. It demonstrates `SubImage`, `DrawImage`, nearest-neighb
 scaling, horizontal flips, and independent animation phases. Press `space` to
 pause, `[`/`]` to remove/add robots, `m` to switch modes, `+`/`-` for resolution,
 and `q` to quit. The sheet is generated in Go; no assets or downloads are needed.
+
+## Browser demo page
+
+The `web/` page follows the ntsvg/ntpdf demo layout and runs both examples locally
+in the browser through booba. It includes demo navigation, clickable controls,
+Kitty/glyph switching, a renderer HUD, and restart links. Ebitengine uses WebGL
+on an offscreen canvas; the visible canvas is booba's terminal.
+
+Build and serve it with Go, Node.js, and Python installed:
+
+```sh
+sh scripts/build-site.sh
+python3 -m http.server 8000 --bind 127.0.0.1
+# Open http://localhost:8000/web/
+```
+
+With [Task](https://taskfile.dev/) installed, `task serve-wasm-site` does both.
+`task check-site` checks the generated assets and WASM binaries. Generated
+runtime files and binaries are ignored by Git.
+
+Browser builds select the pinned Bubble Tea browser fork through `wasm.work`;
+native builds still use upstream Bubble Tea. The booba bridge is confined to the
+example runner. Browser graphics require WebGL and may be throttled in background
+tabs. Restart reloads the page because Ebitengine allows only one loop per process.
+
+The GitHub Pages workflow builds and deploys `web/` on pushes to `main`, version
+tags, published releases, or manual dispatch. Select **GitHub Actions** as the
+repository's Pages source. Its expected project URL is
+`https://nimbleterminal.github.io/ntebitengine/` once deployed.
 
 ## Bubble Tea integration
 
@@ -180,7 +209,8 @@ for the presentation contract this adapter follows.
   is separate; `exp/vmhost` is not used here.
 - [Ebitengine 2.10 desktops do not require Cgo](https://ebitengine.org/en/documents/2.10.html),
   but platform runtime libraries/drivers are still required. This adapter targets
-  desktop terminal applications, not browser or mobile loop integration.
+  desktop terminal applications and the browser setup demonstrated in `web/`;
+  mobile loop integration is not provided.
 - Readback is a synchronization and copying cost; this is not a zero-copy GPU
   presentation path. Lower the picture's Kitty resolution or raster pixel cap
   for expensive scenes. Oversized GPU surfaces are reported as drawing errors.

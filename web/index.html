@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Live Ebitengine sprites and vectors rendered into a Bubble Tea terminal with ntpicture. Try the Go demos locally in your browser.">
+  <title>ntebitengine · Ebitengine in your terminal</title>
+  <link rel="stylesheet" href="site.css?v=1">
+</head>
+<body>
+  <header><a class="brand" href="./">ntebitengine<span>Ebitengine in your terminal.</span></a><a href="https://github.com/NimbleTerminal/ntebitengine">Source ↗</a></header>
+  <main>
+    <nav aria-label="Examples">
+      <a href="?demo=sprites" data-demo="sprites"><strong>Sprite parade</strong><span>Animated pixel robots from a shared sprite sheet, with tinting, flips, and a presented-FPS meter.</span></a>
+      <a href="?demo=bounce" data-demo="bounce"><strong>Vector bounce</strong><span>A bouncing vector ball with physical aspect correction. Switch between Kitty graphics and half-block glyphs.</span></a>
+    </nav>
+    <section class="demo" aria-label="Live terminal example">
+      <div class="toolbar"><h1 id="title">Sprite parade</h1><a id="restart" href="?demo=sprites">Restart ↻</a></div>
+      <div id="controls" role="group" aria-label="Terminal controls"></div>
+      <div class="terminal-frame"><div id="terminal"></div></div>
+      <p id="status" role="status">Starting terminal…</p>
+      <p id="help">Click the terminal to focus. Press q to quit; Restart starts a fresh session.</p>
+      <noscript>This live demo requires JavaScript and WebGL. You can also run the Go examples locally.</noscript>
+    </section>
+    <section class="about" aria-label="About these demos">
+      <h2>Run it in your terminal</h2>
+      <code id="command">go run ./examples/sprites</code>
+      <p>These are the same Go programs as the native examples. Ebitengine draws the scene; ntpicture presents each frame through Kitty graphics or glyphs. Your browser supplies the GPU and terminal.</p>
+      <p><a href="https://github.com/NimbleTerminal/ntebitengine#readme">Adapter documentation</a> · <a href="https://github.com/NimbleTerminal/ntpicture">ntpicture</a> · <a href="https://ebitengine.org/">Ebitengine</a></p>
+    </section>
+  </main>
+  <footer>
+    <span>Powered by <a href="https://github.com/NimbleMarkets/go-booba">booba</a>.</span>
+    <span class="credit">Made with ❤️🤖🔥 for you by <a href="https://nimble.markets">Nimble.Markets</a></span>
+  </footer>
+  <script src="wasm_exec.js"></script>
+  <script type="module" src="site.js"></script>
+</body>
+</html>
