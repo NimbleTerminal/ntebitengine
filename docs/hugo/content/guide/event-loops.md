@@ -269,3 +269,68 @@ Run `go test -race ./...` while developing ownership code, and exercise resize,
 mode changes, slow callbacks, and quit in the [Loop lab](../loop-lab/).
 Use [frame diagnostics](../diagnostics/) to distinguish drawing, readback, and
 presentation costs without adding another render clock.
+
+## ntui overlays
+
+The [ntui Kage lab](https://github.com/NimbleTerminal/ntebitengine/tree/main/examples/ntui)
+adds a third responsibility: ntui generates draw commands on Bubble Tea's loop,
+while `nimbleterminal.dev/ntui/ebiten` renders those commands on Ebitengine's side.
+The backend does not own either loop, input, readback, or Picture.
+
+```go
+type frame struct {
+    controls controls
+    commands []ntui.DrawCmd
+    geometry ntpicture.RasterGeometry
+}
+
+// Bubble Tea Update:
+ui.ProcessInput(msg)
+ui.BeginFrame()
+// Declare widgets using values owned by this model.
+ui.EndFrame()
+// Apply scene shortcuts only when UI capture allows them.
+latest.Store(frame{controls, ui.DrawList.Snapshot(), pic.RasterGeometry()})
+
+// DrawFunc; backend is created/reused only on this callback side:
+f := latest.Load().(frame)
+drawScene(dst, f.controls)
+if f.geometry == geo && geo.Cells.X > 0 && geo.Cells.Y > 0 {
+    backend.Render(dst, f.commands, ntuiebiten.RenderOptions{
+        ScaleX: float64(geo.Pixels.X) / float64(geo.Cells.X),
+        ScaleY: float64(geo.Pixels.Y) / float64(geo.Cells.Y),
+    })
+}
+// Return: ntebitengine reads back the final combined image exactly once.
+```
+
+Initialize the atomic value before either loop starts. `DrawList.Commands()` is
+only a struct copy: `Values` still aliases plot data. `DrawList.Snapshot()` copies
+those mutable slices too, while sharing immutable strings. Never modify the
+published slice or nested Values, reuse its storage, or give the callback a live
+Context. Load the frame once so scene settings and visible controls agree.
+
+Keep Picture updates before Producer updates, and publish after geometry/layout
+changes. Pending requests can reference an earlier geometry; skip UI whose
+snapshot geometry differs from the callback argument. Producer handles the
+obsolete final image using its existing cancellation/generation checks.
+
+Mouse input is still in terminal cells. Set `ui.Input.OffsetY` for terminal
+header rows (two in this demo). Check `WantCaptureMouse()` after widget evaluation
+before scene picking or dragging. `WantCaptureKeyboard()` captures text editing;
+focused non-text widgets also consume navigation keys such as Space. Do not
+allow a focused checkbox and a scene shortcut to both toggle pause. The demo
+preserves text capture across the frame that processes Escape, then clears focus.
+
+Raster text at glyph mode's 1x2 pixels per cell is unreadable. Below 6x12 pixels
+per cell the demo reserves a readable terminal glyph UI pane above the animated
+picture and omits the GPU overlay. Input offsets and scene dimensions account
+for that pane. At adequate resolution, panels float over the shader scene.
+The glyph fallback never submits a second image or changes presentation pacing.
+
+Create and reuse fonts and backend resources on the callback side. The backend
+has no owned GPU images; Dispose drops its font references and disables it,
+without disposing caller fonts/destinations or global text/v2 caches. If an
+application uses additional GPU resources, release them on the callback side as
+part of its lifecycle. This process-lifetime demo exits the engine on shutdown.
+Never pass an Ebitengine image into the CPU RasterBackend's per-pixel path.

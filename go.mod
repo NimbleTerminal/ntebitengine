@@ -9,9 +9,12 @@ require (
 	github.com/hajimehoshi/ebiten/v2 v2.10.5
 	golang.org/x/image v0.47.0
 	nimbleterminal.dev/ntpicture v0.1.1
+	nimbleterminal.dev/ntui v0.1.0
 )
 
 require (
+	charm.land/bubbles/v2 v2.2.1 // indirect
+	charm.land/lipgloss/v2 v2.0.6 // indirect
 	github.com/charmbracelet/colorprofile v0.4.3 // indirect
 	github.com/charmbracelet/ultraviolet v0.0.0-20261008173134-6b8d4baf91b4 // indirect
 	github.com/charmbracelet/x/term v0.2.2 // indirect
@@ -23,6 +26,7 @@ require (
 	github.com/ebitengine/hideconsole v1.0.0 // indirect
 	github.com/ebitengine/purego v0.11.0 // indirect
 	github.com/go-text/typesetting v0.3.5 // indirect
+	github.com/lrstanley/bubblezone/v2 v2.0.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.4.1 // indirect
 	github.com/mattn/go-runewidth v0.0.31 // indirect
 	github.com/muesli/cancelreader v0.2.2 // indirect
@@ -33,6 +37,7 @@ require (
 	golang.org/x/sync v0.24.0 // indirect
 	golang.org/x/sys v0.49.0 // indirect
 	golang.org/x/text v0.43.0 // indirect
+	nimbleterminal.dev/ntcanvas v0.1.1 // indirect
 )
 
 tool github.com/NimbleMarkets/go-booba/cmd/booba-assets

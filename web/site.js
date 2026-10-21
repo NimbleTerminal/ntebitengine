@@ -21,6 +21,11 @@ const demos = {
     help: 't: effect · p: palette · [/]: strength · Space: pause · m: glyph/Kitty · +/-: resolution · q: quit. CRT applies a second shader pass to the plasma image.',
     controls: [['Next effect', 't'], ['Next palette', 'p'], ['Less effect', '['], ['More effect', ']'], ['Pause / resume', ' ']],
   },
+  ntui: {
+    title: 'ntui Kage lab',
+    help: 'Drag panel titles; scroll inside panels. t/p: effect/palette · [/]: strength · Space: pause · m: mode · +/-: resolution · q: quit. Glyph mode and low resolutions use readable terminal controls above the scene. Escape clears text focus.',
+    controls: [['Next effect', 't'], ['Next palette', 'p'], ['Less effect', '['], ['More effect', ']'], ['Pause / resume', ' ']],
+  },
   loops: {
     title: 'Loop lab',
     help: 'Space: pause simulation · l: slow draw · [/]: speed · r: reset · m: glyph/Kitty · +/-: resolution · q: quit. Read the Guide for event-loop ownership and shutdown.',

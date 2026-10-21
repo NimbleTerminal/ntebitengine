@@ -302,3 +302,13 @@ The default tests exercise pacing, geometry invalidation, error recovery, owner
 filtering, and cancellation without starting `RunGame`. The integration test
 runs a hidden loop on the main thread and checks exact sizes, surface clearing,
 premultiplied pixels, immutable frame ownership, and callback errors.
+
+### ntui overlay lab
+
+`go run ./examples/ntui` adds floating immediate-mode controls to the shared
+shader lab: effect, palette, strength, pause, editable text, light/dark panels,
+gauges, and presented-FPS plots. Drag either title bar and scroll inside panels.
+The [browser gallery](https://nimbleterminal.dev/ntebitengine/?demo=ntui) includes
+the same demo. See [its README](examples/ntui/README.md) for the temporary
+workspace required while the ntui backend is unpublished, and the
+[event-loop guide](docs/hugo/content/guide/event-loops.md#ntui-overlays).
