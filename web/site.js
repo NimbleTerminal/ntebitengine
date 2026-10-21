@@ -21,6 +21,11 @@ const demos = {
     help: 't: effect · p: palette · [/]: strength · Space: pause · m: glyph/Kitty · +/-: resolution · q: quit. CRT applies a second shader pass to the plasma image.',
     controls: [['Next effect', 't'], ['Next palette', 'p'], ['Less effect', '['], ['More effect', ']'], ['Pause / resume', ' ']],
   },
+  loops: {
+    title: 'Loop lab',
+    help: 'Space: pause simulation · l: slow draw · [/]: speed · r: reset · m: glyph/Kitty · +/-: resolution · q: quit. Read the Guide for event-loop ownership and shutdown.',
+    controls: [['Pause simulation', ' '], ['Slow draw', 'l'], ['Slower motion', '['], ['Faster motion', ']'], ['Reset phase', 'r']],
+  },
 };
 const requested = new URLSearchParams(location.search).get('demo');
 const demo = Object.hasOwn(demos, requested) ? requested : 'sprites';

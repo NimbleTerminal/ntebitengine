@@ -31,10 +31,15 @@ jobs:
           cache-dependency-path: |
             go.sum
             wasm.work.sum
+            docs/hugo/go.sum
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
-      - name: Build and check browser demos
+      - uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: '0.167.0'
+          extended: true
+      - name: Build and check browser demos and guide
         run: sh scripts/build-site.sh
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5

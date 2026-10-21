@@ -22,8 +22,14 @@ tasks:
   run-shaders:
     desc: Run the native Kage shader lab
     cmds: [go run ./examples/shaders]
+  run-loops:
+    desc: Run the event-loop ownership demo
+    cmds: [go run ./examples/loops]
+  build-docs:
+    desc: Build the Hugo guide into web/docs
+    cmds: [sh scripts/build-docs.sh]
   build-wasm-site:
-    desc: Build browser demos and export the pinned booba runtime
+    desc: Build browser demos, the guide, and the pinned booba runtime
     cmds: [sh scripts/build-site.sh]
   check-site:
     desc: Check the generated site and WASM binaries

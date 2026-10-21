@@ -57,14 +57,38 @@ and `[`/`]` for effect strength. Space pauses animation; mode, resolution, quit,
 and presented-FPS behavior match the other labs. The CRT scene demonstrates a
 second shader pass sampling an intermediate GPU image, with one final readback.
 
+```sh
+go run ./examples/loops
+```
+
+The [Loop lab](examples/loops) accompanies the
+[event-loop guide](docs/hugo/content/guide/event-loops.md). Bubble Tea advances a
+simulation and publishes immutable snapshots; Ebitengine draws the latest one.
+Press `l` to slow the drawing callback deliberately and watch Tea remain active.
+Space pauses simulation, `[`/`]` changes speed, and `r` resets the scene. Separate
+tick, callback, submission, and presentation counters explain the handoff.
+
+## Guide
+
+The [guide](docs/hugo/content/guide/event-loops.md) covers main-thread startup,
+ownership, snapshots, simulation timing, presentation pacing, resize cancellation,
+and shutdown. The [companion walkthrough](docs/hugo/content/guide/loop-lab.md)
+explains what to try in the demo.
+
+Like nt3d, this repository builds a Hugo Book guide at the demo site's `docs/`
+path. Markdown lives under `docs/hugo/content`; its theme is pinned in a separate
+Hugo module. Build just the guide with `sh scripts/build-docs.sh` (or
+`task build-docs`) using Hugo Extended 0.167.0. Serve `web/` as described below
+and open `http://localhost:8000/web/docs/`.
+
 ## Browser demo page
 
-The `web/` page follows the ntsvg/ntpdf demo layout and runs all four examples locally
+The `web/` page follows the ntsvg/ntpdf demo layout and runs all five examples locally
 in the browser through booba. It includes demo navigation, clickable controls,
 Kitty/glyph switching, a renderer HUD, and restart links. Ebitengine uses WebGL
 on an offscreen canvas; the visible canvas is booba's terminal.
 
-Build and serve it with Go, Node.js, and Python installed:
+Build and serve it with Go, Node.js, Hugo Extended 0.167.0, and Python installed:
 
 ```sh
 sh scripts/build-site.sh
