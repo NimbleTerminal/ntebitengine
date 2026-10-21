@@ -1,0 +1,42 @@
+name: Test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GOWORK: 'off'
+  # Exercise OpenGL with Mesa; hosted runners do not need a physical GPU.
+  EBITENGINE_GRAPHICS_LIBRARY: opengl
+  LIBGL_ALWAYS_SOFTWARE: '1'
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+      - name: Install display and graphics runtime
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            xvfb xauth libgl1 libglx-mesa0 libgl1-mesa-dri \
+            libx11-6 libxcursor1 libxext6 libxi6 libxinerama1 libxrandr2 libxrender1
+      - name: Vet
+        run: go vet ./...
+      - name: Test with race detector
+        run: xvfb-run -a -s '-screen 0 1280x720x24' go test -race -count=1 -timeout=5m ./...
+      - name: Test graphics integration
+        run: xvfb-run -a -s '-screen 0 1280x720x24' go test -race -tags integration -count=1 -timeout=5m .

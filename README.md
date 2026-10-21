@@ -303,6 +303,13 @@ filtering, and cancellation without starting `RunGame`. The integration test
 runs a hidden loop on the main thread and checks exact sizes, surface clearing,
 premultiplied pixels, immutable frame ownership, and callback errors.
 
+[Test CI](.github/workflows/test.yml) runs on pushes and pull requests using the
+Go version in `go.mod`. It runs vet, the full suite with the race detector, and
+the integration suite with the race detector. On Linux, Xvfb supplies an X server
+and Mesa supplies software OpenGL, so the graphics tests exercise the hidden
+loop and readback without a physical GPU. This does not measure hardware GPU
+performance or verify every platform's graphics driver.
+
 ### ntui overlay lab
 
 `go run ./examples/ntui` adds floating immediate-mode controls to the shared
