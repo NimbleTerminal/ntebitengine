@@ -218,7 +218,10 @@ background launcher.
 - Frames are submitted on the Tea event loop with
   `SetImageImmutableFor(img, geo)`. Their CPU memory is never reused or mutated.
   `StableID` lets Kitty replace pixels under the same image ID while geometry
-  stays fixed, avoiding placeholder churn.
+  stays fixed, avoiding placeholder churn. ntpicture handles dirty rectangles
+  and unchanged frames when the terminal confirms frame-edit support, and
+  synchronizes full uploads to avoid flashes during same-ID replacement. See
+  its [Kitty frame-update guidance](https://github.com/NimbleTerminal/ntpicture/blob/main/KITTY.md#frame-updates).
 - At most one render is in flight. After submission, the producer waits for an
   owned `PresentedMsg` or `StaleFrameMsg`. An old or foreign presentation cannot
   release the current render slot. `PresentedMsg` means ntpicture committed
