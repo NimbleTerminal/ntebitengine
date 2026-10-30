@@ -1,7 +1,7 @@
 # Sprite parade
 
 ```sh
-go run ./examples/sprites
+go -C examples run ./sprites
 ```
 
 Three lanes of pixel robots walk across a starry background. Each robot uses

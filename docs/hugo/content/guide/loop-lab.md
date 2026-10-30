@@ -8,7 +8,7 @@ weight: 20
 [Run it in the browser](../../../?demo=loops), or from the repository:
 
 ```sh
-go run ./examples/loops
+go -C examples run ./loops
 ```
 
 Read [Managing the event loops](../event-loops/) alongside the

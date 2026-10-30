@@ -1,7 +1,7 @@
 # Kage lab
 
 ```sh
-go run ./examples/shaders
+go -C examples run ./shaders
 ```
 
 Three animated effects use Ebitengine's [Kage fragment shaders](https://ebitengine.org/en/documents/shader.html)
@@ -52,5 +52,5 @@ readback and terminal transfer work. Shader rendering does not remove those cost
 
 The browser demo runs the same program at `web/?demo=shaders` after
 `sh scripts/build-site.sh`; see the repository README for serving instructions.
-`go test ./examples/shaders` compiles both Kage programs to catch shader syntax
+`go -C examples test ./internal/shaderlab` compiles both Kage programs to catch shader syntax
 errors that an ordinary Go build cannot detect in embedded files.

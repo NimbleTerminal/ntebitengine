@@ -27,7 +27,9 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
-          cache-dependency-path: go.sum
+          cache-dependency-path: |
+            go.sum
+            examples/go.sum
       - name: Install display and graphics runtime
         run: |
           sudo apt-get update
@@ -35,8 +37,12 @@ jobs:
             xvfb xauth libgl1 libglx-mesa0 libgl1-mesa-dri \
             libx11-6 libxcursor1 libxext6 libxi6 libxinerama1 libxrandr2 libxrender1
       - name: Vet
-        run: go vet ./...
+        run: |
+          go vet ./...
+          go -C examples vet ./...
       - name: Test with race detector
-        run: xvfb-run -a -s '-screen 0 1280x720x24' go test -race -count=1 -timeout=5m ./...
+        run: |
+          xvfb-run -a -s '-screen 0 1280x720x24' go test -race -count=1 -timeout=5m ./...
+          xvfb-run -a -s '-screen 0 1280x720x24' go -C examples test -race -count=1 -timeout=5m ./...
       - name: Test graphics integration
         run: xvfb-run -a -s '-screen 0 1280x720x24' go test -race -tags integration -count=1 -timeout=5m .

@@ -1,7 +1,7 @@
 # Text lab
 
 ```sh
-go run ./examples/text
+go -C examples run ./text
 ```
 
 Three scenes exercise Ebitengine's `text/v2` API through the same live-framebuffer

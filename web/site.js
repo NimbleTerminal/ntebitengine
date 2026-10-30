@@ -39,7 +39,7 @@ const status = document.querySelector('#status');
 const controls = document.querySelector('#controls');
 document.querySelector('#title').textContent = selected.title;
 document.querySelector('#help').textContent = selected.help;
-document.querySelector('#command').textContent = `go run ./examples/${demo}`;
+document.querySelector('#command').textContent = `go -C examples run ./${demo}`;
 document.title = `${selected.title} · ntebitengine`;
 const restart = new URL(location.href);
 restart.searchParams.set('demo', demo);

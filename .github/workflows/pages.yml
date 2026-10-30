@@ -30,6 +30,7 @@ jobs:
           go-version-file: go.mod
           cache-dependency-path: |
             go.sum
+            examples/go.sum
             wasm.work.sum
             docs/hugo/go.sum
       - uses: actions/setup-node@v7

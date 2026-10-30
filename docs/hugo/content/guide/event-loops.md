@@ -265,7 +265,7 @@ restart. `Close` is idempotent, which makes the post-`Program.Run` cleanup safe.
 | Quit hangs | A callback or custom worker is not returning; cancellation is cooperative |
 | TPS is high but presented FPS is low | Measure draw, readback, encoding, and terminal transfer separately |
 
-Run `go test -race ./...` while developing ownership code, and exercise resize,
+Run `go test -race ./...` and `go -C examples test -race ./...` while developing ownership code, and exercise resize,
 mode changes, slow callbacks, and quit in the [Loop lab](../loop-lab/).
 Use [frame diagnostics](../diagnostics/) to distinguish drawing, readback, and
 presentation costs without adding another render clock.

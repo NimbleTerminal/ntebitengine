@@ -6,28 +6,28 @@ env:
 tasks:
   test:
     desc: Test the adapter and native demos
-    cmds: [go test ./...]
+    cmds: [go test ./..., go -C examples test ./...]
   vet:
     desc: Vet the adapter and native demos
-    cmds: [go vet ./...]
+    cmds: [go vet ./..., go -C examples vet ./...]
   run-bounce:
     desc: Run the native vector demo
-    cmds: [go run ./examples/bounce]
+    cmds: [go -C examples run ./bounce]
   run-sprites:
     desc: Run the native sprite demo
-    cmds: [go run ./examples/sprites]
+    cmds: [go -C examples run ./sprites]
   run-text:
     desc: Run the native text lab
-    cmds: [go run ./examples/text]
+    cmds: [go -C examples run ./text]
   run-shaders:
     desc: Run the native Kage shader lab
-    cmds: [go run ./examples/shaders]
+    cmds: [go -C examples run ./shaders]
   run-ntui:
     desc: Run the floating ntui shader control panel
-    cmds: [go run ./examples/ntui]
+    cmds: [go -C examples run ./ntui]
   run-loops:
     desc: Run the event-loop ownership demo
-    cmds: [go run ./examples/loops]
+    cmds: [go -C examples run ./loops]
   build-docs:
     desc: Build the Hugo guide into web/docs
     cmds: [sh scripts/build-docs.sh]

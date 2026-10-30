@@ -1,7 +1,7 @@
 # Loop lab
 
 ```sh
-go run ./examples/loops
+go -C examples run ./loops
 ```
 
 This example accompanies the [event-loop guide](../../docs/hugo/content/guide/event-loops.md).

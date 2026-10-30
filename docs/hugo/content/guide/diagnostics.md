@@ -89,7 +89,7 @@ in flight, an unconfirmed submission, a failed render, or a Picture-only commit.
 ## Try the Loop lab
 
 ```sh
-go run ./examples/loops
+go -C examples run ./loops
 ```
 
 Its TIME and FRAME rows show the producer sample. The DRAW row independently

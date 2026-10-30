@@ -18,7 +18,12 @@ support. Ebitengine is pinned to v2.10.5 for hidden-window support.
 
 ```sh
 go get nimbleterminal.dev/ntebitengine
-go run ./examples/bounce
+```
+
+Run the demos from a checkout of this repository:
+
+```sh
+go -C examples run ./bounce
 ```
 
 The [bounce example](examples/bounce/main.go) animates a vector ball, adapts to
@@ -27,7 +32,7 @@ resolution, and `q` to quit. It uses physical display aspect to keep the ball
 round even when glyph raster pixels are not square.
 
 ```sh
-go run ./examples/sprites
+go -C examples run ./sprites
 ```
 
 The [sprite parade](examples/sprites) animates tinted pixel robots from a shared
@@ -37,7 +42,7 @@ pause, `[`/`]` to remove/add robots, `m` to switch modes, `+`/`-` for resolution
 and `q` to quit. The sheet is generated in Go; no assets or downloads are needed.
 
 ```sh
-go run ./examples/text
+go -C examples run ./text
 ```
 
 The [text lab](examples/text) uses Ebitengine's `text/v2` API with bundled Go
@@ -48,7 +53,7 @@ mode, and resolution controls as the sprite demo. Kitty mode at higher resolutio
 makes small type clearer; half-block mode shows the limits of a coarse raster.
 
 ```sh
-go run ./examples/shaders
+go -C examples run ./shaders
 ```
 
 The [Kage lab](examples/shaders) renders plasma, neon ripple rings, and a CRT
@@ -58,7 +63,7 @@ and presented-FPS behavior match the other labs. The CRT scene demonstrates a
 second shader pass sampling an intermediate GPU image, with one final readback.
 
 ```sh
-go run ./examples/loops
+go -C examples run ./loops
 ```
 
 The [Loop lab](examples/loops) accompanies the
@@ -83,7 +88,7 @@ and open `http://localhost:8000/web/docs/`.
 
 ## Browser demo page
 
-The `web/` page follows the ntsvg/ntpdf demo layout and runs all five examples locally
+The `web/` page follows the ntsvg/ntpdf demo layout and runs all six examples locally
 in the browser through booba. It includes demo navigation, clickable controls,
 Kitty/glyph switching, a renderer HUD, and restart links. Ebitengine uses WebGL
 on an offscreen canvas; the visible canvas is booba's terminal.
@@ -102,7 +107,10 @@ runtime files and binaries are ignored by Git.
 
 Browser builds select the pinned Bubble Tea browser fork through `wasm.work`;
 native builds still use upstream Bubble Tea. The booba bridge is confined to the
-example runner. Browser graphics require WebGL and may be throttled in background
+example runner. The demos and `booba-assets` tool live in the separate
+`examples/go.mod`, which uses the local adapter through a relative replacement.
+Demo commands run from the repository root; `go -C examples` selects that module.
+Browser graphics require WebGL and may be throttled in background
 tabs. Restart reloads the page because Ebitengine allows only one loop per process.
 
 The GitHub Pages workflow builds and deploys `web/` on pushes to `main`, version
@@ -266,7 +274,7 @@ acknowledgements. The byte count is not compressed transport traffic. The last
 sample remains available across resize, errors, and closure; its geometry may
 differ from the current `Status().Geometry`. Diagnostics do not change pacing.
 
-Run `go run ./examples/loops` for live measurements. See the
+Run `go -C examples run ./loops` for live measurements. See the
 [diagnostics guide](docs/hugo/content/guide/diagnostics.md) for counter semantics,
 measurement boundaries, and experiments to identify expensive stages.
 
@@ -295,11 +303,17 @@ measurement boundaries, and experiments to identify expensive stages.
 
 ```sh
 go test ./...
+go -C examples test ./...
 go test -race ./...
+go -C examples test -race ./...
 go vet ./...
+go -C examples vet ./...
 # Optional real GPU readback test; needs a desktop graphics environment:
 go test -tags integration .
 ```
+
+`task test` and `task vet` cover both modules; root `go test ./...` covers only
+the adapter.
 
 The default tests exercise pacing, geometry invalidation, error recovery, owner
 filtering, and cancellation without starting `RunGame`. The integration test
@@ -315,7 +329,7 @@ performance or verify every platform's graphics driver.
 
 ### ntui overlay lab
 
-`go run ./examples/ntui` adds floating immediate-mode controls to the shared
+`go -C examples run ./ntui` adds floating immediate-mode controls to the shared
 shader lab: effect, palette, strength, pause, editable text, light/dark panels,
 gauges, and presented-FPS plots. Drag either title bar and scroll inside panels.
 The [browser gallery](https://nimbleterminal.dev/ntebitengine/?demo=ntui) includes
