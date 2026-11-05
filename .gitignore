@@ -7,6 +7,7 @@ web/demos/
 web/wasm_exec.js
 web/booba/
 web/ghostty-web/
+web/ntwebterm/
 web/app.wasm
 web/docs/
 docs/hugo/.hugo_build.lock

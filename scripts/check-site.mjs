@@ -5,7 +5,7 @@ import { readFile, access, readdir, stat } from 'node:fs/promises';
 const demos = ['bounce', 'sprites', 'text', 'shaders', 'loops', 'ntui'];
 for (const file of [
   'index.html', 'site.css', 'site.js', 'wasm_exec.js', 'booba/booba.js',
-  'ghostty-web/ghostty-web.js', 'ghostty-web/ghostty-vt.wasm',
+  'ntwebterm/ntwebterm.js', 'ntwebterm/ghostty-vt.wasm',
   'docs/index.html', 'docs/guide/event-loops/index.html', 'docs/guide/loop-lab/index.html',
   'docs/guide/diagnostics/index.html',
 ]) await access(`web/${file}`);

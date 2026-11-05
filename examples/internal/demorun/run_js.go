@@ -4,8 +4,8 @@ package demorun
 
 import (
 	tea "charm.land/bubbletea/v2"
-	booba "github.com/NimbleMarkets/go-booba"
 	"github.com/hajimehoshi/ebiten/v2"
+	booba "nimbleterminal.dev/booba"
 )
 
 func init() {
